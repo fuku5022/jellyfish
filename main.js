@@ -39,8 +39,39 @@ const glowGeo=geo.clone();const glowScale=new Float32Array(scale.length);for(let
 const mouse=new THREE.Vector2();window.addEventListener('pointermove',e=>{mouse.x=e.clientX/innerWidth*2-1;mouse.y=e.clientY/innerHeight*2-1;});
 let paused=false,clock=0,last=performance.now();document.getElementById('motion').onclick=e=>{paused=!paused;e.target.textContent=paused?'Resume motion':'Pause motion';controls.autoRotate=!paused;};
 function tick(now){requestAnimationFrame(tick);const dt=Math.min((now-last)/1000,.05);last=now;if(!paused)clock+=dt;const t=clock;for(let i=0;i<N;i++){const j=i*3,x=orig[j],y=orig[j+1],z=orig[j+2],p=phase[i];if(kind[i]===4)continue;const depth=Math.max(0,1.05-y);const wave=Math.sin(t*1.3+p+depth*1.15);const pulse=1+.025*Math.sin(t*1.8);pos[j]=x*pulse+(.05+depth*.095)*wave+mouse.x*depth*.04;pos[j+1]=y+(kind[i]<2?.085*Math.sin(t*1.8):.035*Math.sin(t*1.7+p));pos[j+2]=z*pulse+(.045+depth*.08)*Math.cos(t*1.1+p+depth*.8)+mouse.y*depth*.035;}
-geo.attributes.position.needsUpdate=true;glowGeo.attributes.position.array.set(pos);glowGeo.attributes.position.needsUpdate=true;points.rotation.y=Math.sin(t*.13)*.11;glow.rotation.y=points.rotation.y;controls.update();renderer.render(scene,camera);}
-if(previewActive){specimens.children.forEach((o,i)=>{o.position.y+=Math.sin(t*previewSpeed*.8+i)*.0018*previewSpeed;o.rotation.y=t*.15*previewSpeed+i*.25})}requestAnimationFrame(tick);
+geo.attributes.position.needsUpdate = true;
+
+glowGeo.attributes.position.array.set(pos);
+glowGeo.attributes.position.needsUpdate = true;
+
+points.rotation.y = Math.sin(t * 0.13) * 0.11;
+glow.rotation.y = points.rotation.y;
+
+// 3D生物のアニメーション
+if (previewActive) {
+  specimens.children.forEach((o, i) => {
+    o.position.y =
+      o.userData.baseY +
+      Math.sin(t * previewSpeed * 0.8 + i) * 0.12;
+
+    o.rotation.y = t * 0.15 * previewSpeed + i * 0.25;
+  });
+}
+
+controls.update();
+renderer.render(scene, camera);
+
+}
+
+// アニメーション開始
+requestAnimationFrame(tick);
+
+// ウィンドウサイズ変更
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
 
 // Developer-only specimen lab. This scene is independent from saved study records.
